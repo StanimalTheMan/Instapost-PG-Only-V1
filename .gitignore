@@ -1,0 +1,7 @@
+bin
+lib
+pyvenv.cfg
+instapost_pgonly_v1.code-workspace
+local_config.py
+.env
+photos
