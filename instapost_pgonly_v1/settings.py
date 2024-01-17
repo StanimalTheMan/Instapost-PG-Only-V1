@@ -136,3 +136,7 @@ load_dotenv()
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
 AWS_REGION = os.environ.get('AWS_REGION')
+
+# serve media files like images during development
+# MEDIA_URL = '/photos/'
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'photos')
