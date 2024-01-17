@@ -1,3 +1,4 @@
+from io import BytesIO
 from django.shortcuts import render, redirect
 from .forms import PhotoForm
 import boto3
@@ -9,35 +10,34 @@ def handle_photo_submission(request):
     if request.method == 'POST':
         form = PhotoForm(request.POST, request.FILES)
         if form.is_valid():
-            # Save the photo to the db
-            photo = form.save()
-
             # Process moderation using AWS Rekognition
-            moderation_status = perform_moderation(photo.image.path)
+            moderation_status = perform_moderation(request.FILES['image'].read())
 
-            # Update the moderation status in the Photo model
-            photo.moderation_status = moderation_status
-            photo.save()
+            # if moderation_status is 'approved'; probably can handle better later, maybe return boolean instead
+            if moderation_status == 'approved':
+                form.save()
+                return redirect('posts/photo-submission-success.html')
+            return render(request, 'error.html', {'message': 'Inappropriate content detected'})
 
-            return redirect('posts/photo-submission-success.html')
+
     else:
         form = PhotoForm()
 
     return render(request, 'posts/photo-submission.html', {'form': form})
 
-def perform_moderation(image_path):
+def perform_moderation(image_data):
     # Use AWS Rekognition to performo moderation
     aws_region = settings.AWS_REGION
     aws_access_key_id = settings.AWS_ACCESS_KEY_ID
     aws_secret_access_key = settings.AWS_SECRET_ACCESS_KEY
     client = boto3.client('rekognition', region_name=aws_region, aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
 
-    with open(image_path, 'rb') as image_file:
-        photo_data = image_file.read()
+    # Create a binary stream from image data using BytesIO
+    image_stream = BytesIO(image_data)
 
     moderation_response = client.detect_moderation_labels(
         Image={
-            'Bytes': photo_data
+            'Bytes': image_stream.read()
         }
     )
 
@@ -48,5 +48,5 @@ def perform_moderation(image_path):
         return 'rejected'
     return 'approved'
 
-# def submission_success(request):
-#     return render(request, 'posts/submission_success.html')
+def submission_success(request):
+    return render(request, 'posts/photo-submission_success.html')
