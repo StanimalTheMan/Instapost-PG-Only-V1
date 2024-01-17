@@ -6,7 +6,7 @@ from .forms import PhotoForm
 from .views import handle_photo_submission, perform_moderation
 
 class PhotoSubmissionTestCase(TestCase):
-
+    # TODO: fix failing test bc Empty Module Name
     @patch('.views.perform_moderation')
     def test_photo_rejected_not_saved(self, mock_perform_moderation):
         # Mock moderation check to simulate rejection
